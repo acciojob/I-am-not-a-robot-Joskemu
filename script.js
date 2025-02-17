@@ -1,71 +1,93 @@
-//your code here
-// script.js
-document.addEventListener('DOMContentLoaded', () => {
-    const images = ['img1.jpg', 'img2.jpg', 'img3.jpg', 'img4.jpg', 'img5.jpg'];
-    const imageContainer = document.getElementById('image-container');
-    const resetButton = document.getElementById('reset');
-    const verifyButton = document.getElementById('verify');
-    const message = document.getElementById('h');
-    const resultMessage = document.getElementById('para');
-    let selectedImages = [];
-    let selectedIndices = [];
-    
-    // Function to randomize images
-    function shuffleImages() {
-        const duplicateIndex = Math.floor(Math.random() * 5);
-        const imageSet = [...images];
-        imageSet.splice(duplicateIndex, 0, images[duplicateIndex]);  // Insert a duplicate image
-        
-        imageContainer.innerHTML = '';  // Clear existing images
-        imageSet.forEach((src, index) => {
-            const imgElement = document.createElement('img');
-            imgElement.src = src;
-            imgElement.alt = `image-${index}`;
-            imgElement.dataset.index = index;
-            imgElement.addEventListener('click', handleImageClick);
-            imageContainer.appendChild(imgElement);
-        });
-    }
+// Image sources
+const images = [
+  'img1.jpg', // Replace with actual image paths
+  'img2.jpg',
+  'img3.jpg',
+  'img4.jpg',
+  'img5.jpg'
+];
 
-    // Handle image click event
-    function handleImageClick(event) {
-        const image = event.target;
-        const index = image.dataset.index;
+// Function to randomize and display images
+function randomizeImages() {
+  // Duplicate a random image
+  const duplicateIndex = Math.floor(Math.random() * images.length);
+  const randomizedImages = [...images, images[duplicateIndex]];
+  
+  // Shuffle the array
+  randomizedImages.sort(() => Math.random() - 0.5);
+  
+  // Add images to the page dynamically
+  const container = document.querySelector('.image-container');
+  container.innerHTML = ''; // Clear any previous images
+  
+  randomizedImages.forEach((src, index) => {
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = `Image ${index + 1}`;
+    img.dataset.index = index; // Store image index
+    container.appendChild(img);
+  });
+}
 
-        if (!selectedIndices.includes(index)) {
-            selectedImages.push(image.src);
-            selectedIndices.push(index);
-            image.style.border = '2px solid #4CAF50'; // Highlight selected image
+// Variables to track selected images
+let selectedImages = [];
 
-            if (selectedImages.length === 1) {
-                resetButton.style.display = 'block';
-            } else if (selectedImages.length === 2) {
-                verifyButton.style.display = 'block';
-            }
-        }
-    }
+// Function to handle image click
+function handleImageClick(event) {
+  const clickedImage = event.target;
+  
+  // Avoid selecting the same image twice
+  if (selectedImages.includes(clickedImage)) return;
 
-    // Reset the game
-    resetButton.addEventListener('click', () => {
-        selectedImages = [];
-        selectedIndices = [];
-        resetButton.style.display = 'none';
-        verifyButton.style.display = 'none';
-        resultMessage.textContent = '';
-        message.textContent = 'Please click on the identical tiles to verify that you are not a robot.';
-        shuffleImages();
-    });
+  // Add clicked image to the array
+  selectedImages.push(clickedImage);
+  clickedImage.style.border = '3px solid blue'; // Highlight selected image
+  
+  // Show Reset button
+  document.getElementById('reset').style.display = 'inline-block';
+  
+  // If two images are selected, show the Verify button
+  if (selectedImages.length === 2) {
+    document.getElementById('verify').style.display = 'inline-block';
+  }
+}
 
-    // Verify the selected images
-    verifyButton.addEventListener('click', () => {
-        if (selectedImages[0] === selectedImages[1]) {
-            resultMessage.textContent = 'You are a human. Congratulations!';
-        } else {
-            resultMessage.textContent = 'We can\'t verify you as a human. You selected the non-identical tiles.';
-        }
-        verifyButton.style.display = 'none';
-    });
+// Function to handle reset
+function reset() {
+  selectedImages = [];
+  document.querySelectorAll('.image-container img').forEach(img => {
+    img.style.border = '';
+  });
+  document.getElementById('reset').style.display = 'none';
+  document.getElementById('verify').style.display = 'none';
+  document.getElementById('para').textContent = ''; // Clear result message
+  randomizeImages();
+  document.getElementById('h').textContent = 'Please click on the identical tiles to verify that you are not a robot.';
+}
 
-    // Initialize the game
-    shuffleImages();
+// Function to handle verification
+function verify() {
+  const [image1, image2] = selectedImages;
+  if (image1.src === image2.src) {
+    document.getElementById('para').textContent = 'You are a human. Congratulations!';
+  } else {
+    document.getElementById('para').textContent = 'We can\'t verify you as a human. You selected the non-identical tiles.';
+  }
+  
+  // Hide Verify button after verification
+  document.getElementById('verify').style.display = 'none';
+}
+
+// Event listeners
+document.getElementById('reset').addEventListener('click', reset);
+document.getElementById('verify').addEventListener('click', verify);
+
+// Initialize the game on page load
+randomizeImages();
+
+// Add event listener to images after loading
+document.querySelector('.image-container').addEventListener('click', (event) => {
+  if (event.target.tagName === 'IMG') {
+    handleImageClick(event);
+  }
 });
